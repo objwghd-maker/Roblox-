@@ -1,0 +1,233 @@
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/sdfesdfsedf/srgtergasdfs/main/aim", true))()
+    end)
+end)
+
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/objwghd-maker/Script-good/refs/heads/main/script%20Lua"))()
+    end)
+end)
+
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://gist.githubusercontent.com/meozoneYT/bf037dff9f0a70017304ddd67fdcd370/raw/e14e74f425b060df523343cf30b787074eb3c5d2/arceus%2520x%2520fly%25202%2520obflucator", true))()
+    end)
+end)
+
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local RunService = game:GetService("RunService")
+    local CoreGui = game:GetService("CoreGui")
+    local TweenService = game:GetService("TweenService")
+
+    local LocalPlayer = Players.LocalPlayer
+
+    if CoreGui:FindFirstChild("SpeedToggleUI") then
+        CoreGui.SpeedToggleUI:Destroy()
+    end
+
+    local ScreenGui = Instance.new("ScreenGui")
+    ScreenGui.Name = "SpeedToggleUI"
+    ScreenGui.Parent = CoreGui
+    ScreenGui.ResetOnSpawn = false
+    ScreenGui.IgnoreGuiInset = true
+
+    local ToggleBtn = Instance.new("TextButton")
+    ToggleBtn.Size = UDim2.new(0, 160, 0, 45)
+    ToggleBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+    ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
+    ToggleBtn.Text = "SPEED 35 : OFF"
+    ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ToggleBtn.TextSize = 14
+    ToggleBtn.Font = Enum.Font.GothamBold
+    ToggleBtn.Active = true
+    ToggleBtn.Draggable = true
+    ToggleBtn.Parent = ScreenGui
+
+    local BtnCorner = Instance.new("UICorner")
+    BtnCorner.CornerRadius = UDim.new(0, 8)
+    BtnCorner.Parent = ToggleBtn
+
+    local BtnStroke = Instance.new("UIStroke")
+    BtnStroke.Color = Color3.fromRGB(0, 200, 255)
+    BtnStroke.Thickness = 2
+    BtnStroke.Parent = ToggleBtn
+
+    local speedEnabled = false
+    local defaultSpeed = 16
+    local targetSpeed = 35
+    local speedConnection = nil
+
+    ToggleBtn.MouseButton1Click:Connect(function()
+        speedEnabled = not speedEnabled
+        
+        if speedEnabled then
+            ToggleBtn.Text = "SPEED 35 : ON"
+            TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(10, 50, 35)}):Play()
+            TweenService:Create(BtnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 255, 150)}):Play()
+            
+            speedConnection = RunService.Heartbeat:Connect(function()
+                local char = LocalPlayer.Character
+                if char and char:FindFirstChildOfClass("Humanoid") then
+                    char:FindFirstChildOfClass("Humanoid").WalkSpeed = targetSpeed
+                end
+            end)
+        else
+            ToggleBtn.Text = "SPEED 35 : OFF"
+            TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(15, 20, 30)}):Play()
+            TweenService:Create(BtnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 200, 255)}):Play()
+            
+            if speedConnection then
+                speedConnection:Disconnect()
+                speedConnection = nil
+            end
+            
+            local char = LocalPlayer.Character
+            if char and char:FindFirstChildOfClass("Humanoid") then
+                char:FindFirstChildOfClass("Humanoid").WalkSpeed = defaultSpeed
+            end
+        end
+    end)
+end)
+
+task.spawn(function()
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+local character = player.Character or player.CharacterAdded:Wait()
+
+player.CharacterAdded:Connect(function(newChar)
+	character = newChar
+end)
+
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "CompactMenuGui"
+screenGui.ResetOnSpawn = false
+
+local success, parent = pcall(function()
+	return gethui() or game:GetService("CoreGui")
+end)
+
+if success and parent then
+	screenGui.Parent = parent
+else
+	screenGui.Parent = player:WaitForChild("PlayerGui")
+end
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Name = "MainFrame"
+mainFrame.Size = UDim2.new(0, 120, 0, 60)
+mainFrame.Position = UDim2.new(0.5, -60, 0.4, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(20, 20, 25)
+mainFrame.BackgroundTransparency = 1
+mainFrame.Active = true
+mainFrame.Parent = screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 10)
+corner.Parent = mainFrame
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(28, 28, 34)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(16, 16, 20))
+})
+gradient.Parent = mainFrame
+
+local border = Instance.new("UIStroke")
+border.Color = Color3.fromRGB(255, 215, 0)
+border.Thickness = 2
+border.Transparency = 1
+border.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+border.Parent = mainFrame
+
+local dragHandle = Instance.new("Frame")
+dragHandle.Name = "DragHandle"
+dragHandle.Size = UDim2.new(0, 14, 0, 34)
+dragHandle.Position = UDim2.new(0.5, -7, 0, -30)
+dragHandle.BackgroundColor3 = Color3.fromRGB(255, 200, 0)
+dragHandle.BorderSizePixel = 0
+dragHandle.Parent = mainFrame
+
+local handleCorner = Instance.new("UICorner")
+handleCorner.CornerRadius = UDim.new(0, 6)
+handleCorner.Parent = dragHandle
+
+local handleGradient = Instance.new("UIGradient")
+handleGradient.Color = ColorSequence.new({
+	ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 230, 70)),
+	ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 150, 0))
+})
+handleGradient.Parent = dragHandle
+
+local function createButton(name, text, size, position)
+	local btn = Instance.new("TextButton")
+	btn.Name = name
+	btn.Text = text
+	btn.Size = size
+	btn.Position = position
+	btn.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+	btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+	btn.TextSize = 13
+	btn.Font = Enum.Font.SourceSansBold
+	btn.BorderSizePixel = 0
+	btn.Parent = mainFrame
+
+	local btnCorner = Instance.new("UICorner")
+	btnCorner.CornerRadius = UDim.new(0, 6)
+	btnCorner.Parent = btn
+
+	local btnStroke = Instance.new("UIStroke")
+	btnStroke.Color = Color3.fromRGB(255, 215, 0)
+	btnStroke.Thickness = 2
+	btnStroke.Parent = btn
+
+	return btn
+end
+
+local btn1 = createButton("Btn1", "1", UDim2.new(0, 60, 0, 30), UDim2.new(0, 0, 0, 0))
+local btn2 = createButton("Btn2", "2", UDim2.new(0, 60, 0, 30), UDim2.new(0, 60, 0, 0))
+local btn3 = createButton("Btn3", "3", UDim2.new(0, 60, 0, 30), UDim2.new(0, 30, 0, 30))
+
+local function teleportTo(targetVector)
+	local hrp = character:FindFirstChild("HumanoidRootPart")
+	if hrp then
+		hrp.CFrame = CFrame.new(targetVector)
+	end
+end
+
+btn1.MouseButton1Click:Connect(function() teleportTo(Vector3.new(-408.12, 19.61, -1240.98)) end)
+btn2.MouseButton1Click:Connect(function() teleportTo(Vector3.new(17.22, 19.91, -2056.90)) end)
+btn3.MouseButton1Click:Connect(function() teleportTo(Vector3.new(-531.09, 355.96, -2190.72)) end)
+
+local dragging = false
+local dragStart, startPos
+
+dragHandle.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		dragStart = input.Position
+		startPos = mainFrame.Position
+	end
+end)
+
+UserInputService.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - dragStart
+		mainFrame.Position = UDim2.new(
+			startPos.X.Scale,
+			startPos.X.Offset + delta.X,
+			startPos.Y.Scale,
+			startPos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UserInputService.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
