@@ -719,3 +719,120 @@ task.spawn(function()
         loadstring(game:HttpGet("https://raw.githubusercontent.com/objwghd-maker/12HB/refs/heads/main/script%20Lua"))()
     end)
 end)
+
+task.spawn(function()
+    pcall(function()
+        local Players = game:GetService("Players")
+        local RunService = game:GetService("RunService")
+        local UserInputService = game:GetService("UserInputService")
+        local lp = Players.LocalPlayer
+
+        local function getParent()
+            local success, result = pcall(function()
+                if gethui then
+                    return gethui()
+                end
+                return game:GetService("CoreGui")
+            end)
+            if success and result then
+                return result
+            end
+            return lp:WaitForChild("PlayerGui")
+        end
+
+        local parent = getParent()
+        local oldGui = parent:FindFirstChild("AntiFlingToggle")
+        if oldGui then oldGui:Destroy() end
+
+        local ScreenGui = Instance.new("ScreenGui")
+        ScreenGui.Name = "AntiFlingToggle"
+        ScreenGui.ResetOnSpawn = false
+        ScreenGui.Parent = parent
+
+        local Button = Instance.new("TextButton")
+        Button.Size = UDim2.new(0, 140, 0, 40)
+        Button.Position = UDim2.new(0.5, -70, 0.12, 0)
+        Button.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+        Button.Text = "Anti-Fling: OFF"
+        Button.TextColor3 = Color3.fromRGB(255, 255, 255)
+        Button.Font = Enum.Font.GothamBold
+        Button.TextSize = 14
+        Button.Parent = ScreenGui
+
+        local UICorner = Instance.new("UICorner")
+        UICorner.CornerRadius = UDim.new(0, 8)
+        UICorner.Parent = Button
+
+        local antiFlingEnabled = false
+        local connection = nil
+        local dragging = false
+        local dragStart, startPos
+
+        local function enableAntiFling()
+            if connection then connection:Disconnect() end
+            connection = RunService.Stepped:Connect(function()
+                local myChar = lp.Character
+                if not myChar then return end
+
+                local hrp = myChar:FindFirstChild("HumanoidRootPart")
+                if hrp then
+                    if hrp.AssemblyLinearVelocity.Magnitude > 30 or hrp.AssemblyAngularVelocity.Magnitude > 20 then
+                        hrp.AssemblyLinearVelocity = Vector3.zero
+                        hrp.AssemblyAngularVelocity = Vector3.zero
+                    end
+                end
+
+                for _, player in ipairs(Players:GetPlayers()) do
+                    if player ~= lp and player.Character then
+                        for _, part in ipairs(player.Character:GetChildren()) do
+                            if part:IsA("BasePart") then
+                                part.CanCollide = false
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+
+        local function disableAntiFling()
+            if connection then
+                connection:Disconnect()
+                connection = nil
+            end
+        end
+
+        Button.MouseButton1Click:Connect(function()
+            antiFlingEnabled = not antiFlingEnabled
+            if antiFlingEnabled then
+                Button.Text = "Anti-Fling: ON"
+                Button.BackgroundColor3 = Color3.fromRGB(50, 180, 50)
+                enableAntiFling()
+            else
+                Button.Text = "Anti-Fling: OFF"
+                Button.BackgroundColor3 = Color3.fromRGB(200, 50, 50)
+                disableAntiFling()
+            end
+        end)
+
+        Button.InputBegan:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = true
+                dragStart = input.Position
+                startPos = Button.Position
+            end
+        end)
+
+        Button.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+                dragging = false
+            end
+        end)
+
+        UserInputService.InputChanged:Connect(function(input)
+            if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+                local delta = input.Position - dragStart
+                Button.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+            end
+        end)
+    end)
+end)
