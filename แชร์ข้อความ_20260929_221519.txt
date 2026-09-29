@@ -1,6 +1,6 @@
 task.spawn(function()
     pcall(function()
-        loadstring(game:HttpGet("https://raw.githubusercontent.com/Aepione/Prensado/refs/heads/main/Prensado%20camlock"))()
+        loadstring(game:HttpGet("https://raw.githubusercontent.com/objwghd-maker/3tidyeyyorw/refs/heads/main/script%20Lua"))()
     end)
 end)
 
